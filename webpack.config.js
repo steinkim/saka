@@ -2,6 +2,7 @@ const webpack = require('webpack');
 const BabiliPlugin = require('babili-webpack-plugin');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const GenerateJsonPlugin = require('generate-json-webpack-plugin');
+const ChromeExtensionReloader = require('webpack-chrome-extension-reloader');
 const marked = require('marked');
 const path = require('path');
 const merge = require('webpack-merge');
@@ -29,7 +30,7 @@ module.exports = function webpackConfig(env) {
       modules: ['./src', './node_modules']
     },
     entry: {
-      background_page: 'src/background_page/index.js',
+      background: 'src/background_page/index.js',
       toggle_saka: 'src/content_script/toggle_saka.js',
       // 'extensions': './src/pages/extensions/index.js',
       // 'info': './src/pages/info/index.js',
@@ -157,6 +158,18 @@ module.exports = function webpackConfig(env) {
         SAKA_BENCHMARK: JSON.stringify(benchmark === 'benchmark')
       })
     ]);
+    if (platform === 'chrome') {
+      config.plugins = config.plugins.concat([
+        new ChromeExtensionReloader({
+          port: 9090,
+          reloadPage: true,
+          entries: {
+            contentScript: 'toggle_saka',
+            background: 'background'
+          }
+        })
+      ]);
+    }
   }
   return config;
 };
